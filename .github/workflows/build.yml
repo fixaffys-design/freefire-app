@@ -1,64 +1,10 @@
-name: Build APK
+name: Build
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create project
-        run: |
-          mkdir -p app/src/main/java/com/example/ff
-          mkdir -p app/src/main/res/values
-          mkdir -p gradle/wrapper
-          cat > settings.gradle.kts <<'EOF'
-          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
-          rootProject.name = "FF"
-          include(":app")
-          EOF
-          cat > build.gradle.kts <<'EOF'
-          plugins { id("com.android.application") version "8.5.2" apply false; id("org.jetbrains.kotlin.android") version "2.0.21" apply false }
-          EOF
-          cat > gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m
-          android.useAndroidX=true
-          EOF
-          cat > gradle/wrapper/gradle-wrapper.properties <<'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          cat > app/build.gradle.kts <<'EOF'
-          plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
-          android { namespace = "com.example.ff"; compileSdk = 34; defaultConfig { applicationId = "com.example.ff"; minSdk = 26; targetSdk = 34; versionCode = 1; versionName = "1.0" } buildTypes { release { isMinifyEnabled = false } } compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 } kotlinOptions { jvmTarget = "17" } }
-          dependencies { implementation("androidx.core:core-ktx:1.13.1"); implementation("androidx.appcompat:appcompat:1.7.0") }
-          EOF
-          echo '<resources><string name="app_name">حساسية فري فاير</string></resources>' > app/src/main/res/values/strings.xml
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:allowBackup="true" android:label="حساسية فري فاير" android:theme="@android:style/Theme.Black.NoTitleBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          cat > app/src/main/java/com/example/ff/MainActivity.kt <<'KOT'
-          package com.example.ff
-          import android.os.Bundle
-          import android.widget.*
-          import androidx.appcompat.app.AppCompatActivity
-          import android.app.ActivityManager
-          import android.content.Context
-          import android.os.Build
-          import android.view.Gravity
-          class MainActivity : AppCompatActivity() {
-            override fun onCreate(b: Bundle?) {
-              super.onCreate(b)
-              val lay = LinearLayout(this); lay.orientation = LinearLayout.VERTICAL; lay.setPadding(50,50,50,50); lay.setBackgroundColor(0xFF101010.toInt()); lay.gravity = Gravity.CENTER
-              val t1 = TextView(this); t1.text="حساسية فري فاير"; t1.textSize=26f; t1.setTextColor(0xFFFF5722.toInt()); t1.gravity=Gravity.CENTER
-              val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager; val mi = ActivityManager.MemoryInfo(); am.getMemoryInfo(mi); val ram=(mi.totalMem/1024/1024/1024).toInt()
-              val gen = if(ram>=8) 175 else if(ram>=6) 165 else 150
-              val t2 = TextView(this); t2.textSize=18f; t2.setTextColor(0xFFFFFFFF.toInt()); t2.gravity=Gravity.CENTER
-              t2.text="\n\nالموديل: ${Build.MODEL}\nالرام: ${ram}GB\n\n--- الحساسية ---\nالعامة: $gen\nالحمراء: ${gen-8}\n2x: ${gen-18}\n4x: ${gen-30}\nالقناص: ${gen-80}"
-              lay.addView(t1); lay.addView(t2); setContentView(lay)
-            }
-          }
-          KOT
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -66,8 +12,20 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Build APK
         run: |
+          mkdir -p app/src/main/java/com/example/ff
+          mkdir -p app/src/main/res/values
+          mkdir -p gradle/wrapper
+          echo "pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}} dependencyResolutionManagement{repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS);repositories{google();mavenCentral()}} rootProject.name=\"FF\";include(\":app\")" > settings.gradle.kts
+          echo "plugins{id(\"com.android.application\") version \"8.5.2\" apply false;id(\"org.jetbrains.kotlin.android\") version \"2.0.21\" apply false}" > build.gradle.kts
+          echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
+          echo -e "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\\://services.gradle.org/distributions/gradle-8.7-bin.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists" > gradle/wrapper/gradle-wrapper.properties
+          echo "plugins{id(\"com.android.application\");id(\"org.jetbrains.kotlin.android\")} android{namespace=\"com.example.ff\";compileSdk=34;defaultConfig{applicationId=\"com.example.ff\";minSdk=26;targetSdk=34;versionCode=1;versionName=\"1.0\"} buildTypes{release{isMinifyEnabled=false}} compileOptions{sourceCompatibility=JavaVersion.VERSION_17;targetCompatibility=JavaVersion.VERSION_17} kotlinOptions{jvmTarget=\"17\"}} dependencies{implementation(\"androidx.core:core-ktx:1.13.1\");implementation(\"androidx.appcompat:appcompat:1.7.0\")}" > app/build.gradle.kts
+          echo "<resources><string name=\"app_name\">حساسية فري فاير</string></resources>" > app/src/main/res/values/strings.xml
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><application android:allowBackup=\"true\" android:label=\"حساسية فري فاير\" android:theme=\"@android:style/Theme.Black.NoTitleBar\"><activity android:name=\".MainActivity\" android:exported=\"true\"><intent-filter><action android:name=\"android.intent.action.MAIN\"/><category android:name=\"android.intent.category.LAUNCHER\"/></intent-filter></activity></application></manifest>" > app/src/main/AndroidManifest.xml
+          printf "package com.example.ff\nimport android.os.Bundle\nimport android.widget.*\nimport androidx.appcompat.app.AppCompatActivity\nimport android.app.ActivityManager\nimport android.content.Context\nimport android.os.Build\nimport android.view.Gravity\nclass MainActivity:AppCompatActivity(){override fun onCreate(b:Bundle?){super.onCreate(b);val lay=LinearLayout(this);lay.orientation=LinearLayout.VERTICAL;lay.setPadding(50,50,50,50);lay.setBackgroundColor(0xFF101010.toInt());lay.gravity=Gravity.CENTER;val t1=TextView(this);t1.text=\"حساسية فري فاير\";t1.textSize=26f;t1.setTextColor(0xFFFF5722.toInt());t1.gravity=Gravity.CENTER;val am=getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager;val mi=ActivityManager.MemoryInfo();am.getMemoryInfo(mi);val ram=(mi.totalMem/1024/1024/1024).toInt();val gen=if(ram>=8)175 else if(ram>=6)165 else 150;val t2=TextView(this);t2.textSize=18f;t2.setTextColor(0xFFFFFFFF.toInt());t2.gravity=Gravity.CENTER;t2.text=\"\\n\\nالموديل: \${Build.MODEL}\\nالرام: \${ram}GB\\n\\nالعامة: \$gen\\nالحمراء: \${gen-8}\\n2x: \${gen-18}\\n4x: \${gen-30}\";lay.addView(t1);lay.addView(t2);setContentView(lay)}}" > app/src/main/java/com/example/ff/MainActivity.kt
           curl -s https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
-          printf '#!/bin/sh\nexec gradle "$@"\n' > gradlew
+          echo "#!/bin/sh" > gradlew
+          echo "exec gradle \"\$@\"" >> gradlew
           chmod +x gradlew
          ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
