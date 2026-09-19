@@ -1,50 +1,28 @@
 name: Build Single File APK
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Create Full Project From Single File
+      - name: Create Project
         run: |
-          rm -rf app src
           mkdir -p app/src/main/java/com/example/freefiresensitivityscanner
           mkdir -p app/src/main/res/values
           mkdir -p gradle/wrapper
-
           cat > settings.gradle.kts <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
           rootProject.name = "FreeFireSensitivityScanner"
           include(":app")
           EOF
-
           cat > build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application") version "8.5.2" apply false
-              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-          }
+          plugins { id("com.android.application") version "8.5.2" apply false; id("org.jetbrains.kotlin.android") version "2.0.21" apply false }
           EOF
-
           cat > gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          org.gradle.jvmargs=-Xmx2048m
           android.useAndroidX=true
           EOF
-
           cat > gradle/wrapper/gradle-wrapper.properties <<'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
@@ -52,171 +30,79 @@ jobs:
           zipStoreBase=GRADLE_USER_HOME
           zipStorePath=wrapper/dists
           EOF
-
           cat > app/build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application")
-              id("org.jetbrains.kotlin.android")
-          }
+          plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
           android {
-              namespace = "com.example.freefiresensitivityscanner"
-              compileSdk = 34
-              defaultConfig {
-                  applicationId = "com.example.freefiresensitivityscanner"
-                  minSdk = 26
-                  targetSdk = 34
-                  versionCode = 1
-                  versionName = "1.0"
-              }
-              buildTypes {
-                  release {
-                      isMinifyEnabled = false
-                      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-                  }
-              }
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-              kotlinOptions { jvmTarget = "17" }
+            namespace = "com.example.freefiresensitivityscanner"
+            compileSdk = 34
+            defaultConfig { applicationId = "com.example.freefiresensitivityscanner"; minSdk = 26; targetSdk = 34; versionCode = 1; versionName = "1.0"; archivesBaseName.set("حساسية-فري-فاير") }
+            buildTypes { release { isMinifyEnabled = false } }
+            compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+            kotlinOptions { jvmTarget = "17" }
           }
-          dependencies {
-              implementation("androidx.core:core-ktx:1.13.1")
-              implementation("androidx.appcompat:appcompat:1.7.0")
-          }
+          dependencies { implementation("androidx.core:core-ktx:1.13.1"); implementation("androidx.appcompat:appcompat:1.7.0") }
           EOF
-
           cat > app/proguard-rules.pro <<'EOF'
-          -keep class com.example.freefiresensitivityscanner.** { *; }
+          -keep class com.example.** { *; }
           EOF
-
           cat > app/src/main/AndroidManifest.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application android:allowBackup="true" android:label="Free Fire Sensitivity Scanner" android:supportsRtl="true" android:theme="@style/AppTheme">
-                  <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
-                      <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
-                  </activity>
-              </application>
-          </manifest>
+          <?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:allowBackup="true" android:label="حساسية فري فاير" android:theme="@android:style/Theme.Black.NoTitleBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
           EOF
-
-          cat > app/src/main/res/values/styles.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-                  <item name="android:fontFamily">sans-serif</item>
-                  <item name="colorAccent">#FF5722</item>
-                  <item name="android:navigationBarColor">#101010</item>
-                  <item name="android:statusBarColor">#101010</item>
-                  <item name="android:windowLightStatusBar">false</item>
-              </style>
-          </resources>
+          cat > app/src/main/res/values/strings.xml <<'EOF'
+          <resources><string name="app_name">حساسية فري فاير</string></resources>
           EOF
-
-          cat > app/src/main/res/values/colors.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?><resources><color name="black">#FF000000</color></resources>
-          EOF
-
           cat > app/src/main/java/com/example/freefiresensitivityscanner/MainActivity.kt <<'EOF'
           package com.example.freefiresensitivityscanner
           import android.os.Bundle
-          import android.view.Gravity
-          import android.view.View
-          import android.widget.Button
-          import android.widget.LinearLayout
-          import android.widget.ScrollView
-          import android.widget.TextView
+          import android.widget.*
           import androidx.appcompat.app.AppCompatActivity
-          import kotlin.math.roundToInt
           import android.app.ActivityManager
           import android.content.Context
-          import android.content.IntentFilter
-          import android.os.BatteryManager
           import android.os.Build
           import android.os.Environment
           import android.os.StatFs
-          import android.view.WindowManager
-          import kotlin.math.max
-          import kotlin.math.min
-          data class DeviceInfo(val manufacturer: String, val model: String, val androidVersion: String, val processor: String, val socManufacturer: String, val cpuCores: Int, val totalRamGb: Int, val availableRamGb: Int, val totalStorageGb: Int, val freeStorageGb: Int, val screenWidth: Int, val screenHeight: Int, val dpi: Int, val refreshRate: Int, val batteryTemperature: Float)
-          class DeviceScanner(private val context: Context) {
-              fun readDeviceInfo(): DeviceInfo {
-                  val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                  val mi = ActivityManager.MemoryInfo(); am.getMemoryInfo(mi)
-                  val totalRam = (mi.totalMem.toDouble()/1024/1024/1024).roundToInt().coerceAtLeast(1)
-                  val availRam = (mi.availMem.toDouble()/1024/1024/1024).roundToInt().coerceAtLeast(0)
-                  val stat = StatFs(Environment.getDataDirectory().path)
-                  val totalSt = (stat.totalBytes.toDouble()/1024/1024/1024).roundToInt()
-                  val freeSt = (stat.availableBytes.toDouble()/1024/1024/1024).roundToInt()
-                  val dm = context.resources.displayMetrics
-                  val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                  @Suppress("DEPRECATION") val rr = wm.defaultDisplay.refreshRate.roundToInt().coerceAtLeast(60)
-                  val bi = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                  val raw = bi?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)?: -1
-                  val temp = if(raw>0) raw/10f else 0f
-                  val proc = if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S) "${Build.SOC_MANUFACTURER} ${Build.SOC_MODEL}" else Build.HARDWARE
-                  val soc = if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S) Build.SOC_MANUFACTURER else "غير متاح"
-                  return DeviceInfo(Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE, proc, soc, Runtime.getRuntime().availableProcessors(), totalRam, availRam, totalSt, freeSt, dm.widthPixels, dm.heightPixels, dm.densityDpi, rr, temp)
-              }
-          }
-          data class GameSettings(val phoneLevel: String, val general: Int, val redDot: Int, val scope2x: Int, val scope4x: Int, val sniper: Int, val freeLook: Int, val fireButton: Int, val graphics: String, val frameRate: String)
-          object SensitivityCalculator {
-              fun calculate(info: DeviceInfo): GameSettings {
-                  var score=0
-                  score+=when{info.totalRamGb>=12->35;info.totalRamGb>=8->30;info.totalRamGb>=6->25;info.totalRamGb>=4->18;else->10}
-                  score+=when{info.cpuCores>=12->30;info.cpuCores>=8->25;info.cpuCores>=6->20;info.cpuCores>=4->14;else->8}
-                  score+=when{info.refreshRate>=120->20;info.refreshRate>=90->16;info.refreshRate>=60->12;else->7}
-                  score+=when{info.freeStorageGb>=20->15;info.freeStorageGb>=10->10;info.freeStorageGb>=5->6;else->2}
-                  if(info.batteryTemperature>40f) score-=10
-                  score=score.coerceIn(0,100)
-                  val level=when{score>=85->"قوي جدًا";score>=65->"قوي";score>=45->"متوسط";else->"ضعيف"}
-                  val gen=when{score>=85->175;score>=65->165;score>=45->150;else->135}
-                  return GameSettings(level,gen, min(200,max(0,gen-8)), min(200,max(0,gen-18)), min(200,max(0,gen-30)), min(200,max(0,gen-80)), min(200,max(0,gen-25)), when{score>=75->52;score>=50->50;else->48}, when{score>=85->"Ultra";score>=65->"عالٍ";score>=45->"قياسي";else->"سلس"}, when{score>=85->"مرتفع جدًا";score>=65->"مرتفع";score>=45->"مرتفع إذا لم ترتفع الحرارة";else->"عادي"})
-              }
-          }
+          import android.view.Gravity
           class MainActivity : AppCompatActivity() {
-              private lateinit var resultText: TextView
-              private lateinit var scanButton: Button
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  val sv=ScrollView(this); val ml=LinearLayout(this); ml.orientation=LinearLayout.VERTICAL; ml.setPadding(dp(18),dp(18),dp(18),dp(18)); ml.setBackgroundColor(0xFF101010.toInt())
-                  val t=TextView(this); t.text="Free Fire Sensitivity Scanner"; t.textSize=24f; t.gravity=Gravity.CENTER; t.setTextColor(0xFFFF5722.toInt()); t.setPadding(0,0,0,dp(12))
-                  val sub=TextView(this); sub.text="فحص الهاتف وإعطاء إعدادات مناسبة لـ Free Fire"; sub.textSize=15f; sub.gravity=Gravity.CENTER; sub.setTextColor(0xFFFFFFFF.toInt()); sub.setPadding(0,0,0,dp(18))
-                  scanButton=Button(this); scanButton.text="فحص الهاتف الآن"; scanButton.textSize=16f; scanButton.setTextColor(0xFFFFFFFF.toInt()); scanButton.setBackgroundColor(0xFFE64A19.toInt())
-                  resultText=TextView(this); resultText.textSize=16f; resultText.setTextColor(0xFFFFFFFF.toInt()); resultText.setPadding(dp(8),dp(20),dp(8),dp(20)); resultText.textDirection=View.TEXT_DIRECTION_RTL
-                  ml.addView(t); ml.addView(sub); ml.addView(scanButton); ml.addView(resultText); sv.addView(ml); setContentView(sv)
-                  scanButton.setOnClickListener{scan()}
-                  scan()
-              }
-              private fun scan(){
-                  resultText.text="جاري فحص الهاتف..."
-                  val info=DeviceScanner(this).readDeviceInfo(); val s=SensitivityCalculator.calculate(info)
-                  resultText.text="نتيجة فحص الهاتف\n====================\n\nنوع الهاتف:\n${info.manufacturer} ${info.model}\n\nAndroid:\n${info.androidVersion}\n\nالمعالج:\n${info.processor}\n\nRAM:\n${info.totalRamGb} GB\n\nالتخزين الفارغ:\n${info.freeStorageGb} GB\n\nالشاشة:\n${info.screenWidth} x ${info.screenHeight} - ${info.refreshRate}Hz\n\nالحرارة:\n${info.batteryTemperature} °C\n\nالتصنيف:\n${s.phoneLevel}\n\nإعدادات Free Fire\n====================\n\nالعامة: ${s.general}\nالنقطة الحمراء: ${s.redDot}\n2x: ${s.scope2x}\n4x: ${s.scope4x}\nالقناص: ${s.sniper}\nالنظرة الحرة: ${s.freeLook}\nزر الإطلاق: ${s.fireButton}%\n\nالجودة: ${s.graphics}\nالإطارات: ${s.frameRate}"
-              }
-              private fun dp(v:Int)=(v*resources.displayMetrics.density).roundToInt()
+            override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              val lay = android.widget.LinearLayout(this)
+              lay.orientation = android.widget.LinearLayout.VERTICAL
+              lay.setPadding(30,30,30,30)
+              lay.gravity = Gravity.CENTER
+              lay.setBackgroundColor(0xFF101010.toInt())
+              val title = TextView(this)
+              title.text = "حساسية فري فاير"
+              title.textSize = 26f
+              title.setTextColor(0xFFFF5722.toInt())
+              title.gravity = Gravity.CENTER
+              val txt = TextView(this)
+              txt.textSize = 18f
+              txt.setTextColor(0xFFFFFFFF.toInt())
+              val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+              val mi = ActivityManager.MemoryInfo()
+              am.getMemoryInfo(mi)
+              val totalRam = (mi.totalMem/1024/1024/1024).toInt()
+              val stat = StatFs(Environment.getDataDirectory().path)
+              val free = (stat.availableBytes/1024/1024/1024).toInt()
+              val dm = resources.displayMetrics
+              val level = if(totalRam>=8) "قوي جدا 🔥" else if(totalRam>=6) "قوي" else "متوسط"
+              val gen = if(totalRam>=8) 175 else if(totalRam>=6) 165 else 150
+              txt.text = "\n\nفحص الهاتف:\nالموديل: ${Build.MODEL}\nالرام: ${totalRam}GB\nالفارغ: ${free}GB\nالشاشة: ${dm.widthPixels}x${dm.heightPixels}\n\nالتصنيف: $level\n\n--- اعدادات فري فاير ---\n\nالعامة: $gen\nالنقطة الحمراء: ${gen-8}\nسكوب 2x: ${gen-18}\nسكوب 4x: ${gen-30}\nالقناص: ${gen-80}\nالنظرة الحرة: ${gen-25}\nزر الاطلاق: 52%\n\nالجودة: Ultra"
+              txt.gravity = Gravity.CENTER
+              lay.addView(title)
+              lay.addView(txt)
+              setContentView(lay)
+            }
           }
           EOF
-
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+        with: { distribution: 'temurin', java-version: '17' }
+      - uses: android-actions/setup-android@v3
       - name: Build APK
         run: |
-          chmod +x./gradlew || echo "no gradlew, downloading"
-          if [! -f./gradlew ]; then
-            wget https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -O gradle/wrapper/gradle-wrapper.jar || true
-            echo "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-bin.zip" > gradle/wrapper/gradle-wrapper.properties
-          fi
-         ./gradlew assembleDebug || gradle assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FreeFire-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          curl -s "https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+          echo -e '#!/bin/sh\nexec gradle "$@"' > gradlew
+          chmod +x gradlew
+         ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with: { name: حساسية-فري-فاير-APK, path: app/build/outputs/apk/debug/app-debug.apk }
